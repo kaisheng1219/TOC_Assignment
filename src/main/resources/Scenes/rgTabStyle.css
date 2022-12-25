@@ -1,0 +1,31 @@
+.text-area {
+    -fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;
+    -fx-background-color: white;
+}
+
+.text-area .content {
+    -fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;
+    -fx-background-color: white;
+    -fx-border-color: black;
+}
+
+.text-area *.text {
+    -fx-text-alignment: left;
+}
+
+.button {
+     -fx-background-insets: 0.0;
+     -fx-background-radius: 10 10 10 10;
+     -fx-background-color: #e0e3ff;
+}
+
+.button:focused {
+    -fx-background-color: #c7ccff;
+}
+
+.button:hover {
+    -fx-cursor: hand;
+    -fx-background-color: #c7ccff;
+}
