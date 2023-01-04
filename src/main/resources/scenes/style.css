@@ -52,15 +52,14 @@
     -fx-border-color: transparent;
 }
 
-
-.text-area {
+#ta,#ta1,#ta2,#taTitle {
     -fx-background-color: #fffce0;
 }
 
-.text-area .content {
+#ta .content, #ta1 .content, #ta2 .content, #taTitle .content {
     -fx-background-color: #fffce0;
 }
 
-.text-area *.text {
+#ta .text, #ta1 .text, #ta2 .text, #taTitle .text {
     -fx-text-alignment: center;
 }
