@@ -5,49 +5,52 @@ import util.GrammarConverter;
 import java.util.*;
 
 public class NFA extends Automaton {
+    public String getDefinition() {
+        return "M = {Q, Σ, δ, q₀, F}\n" + "Q = " +
+                states.toString().replace("[", "{").replace("]", "}\n") +
+                "Σ = " +
+                symbols.stream().filter(s -> s != 'Ɛ')
+                        .toList().toString()
+                        .replace("[", "{").replace("]", "}\n") +
+                "δ: Q x Σ\uD835\uDF74 ➞ Pow(Q)\n" +
+                "q₀ = " + states.stream().parallel().filter(State::isStartState).toList().get(0) + "\n" +
+                "F = " +
+                states.stream().parallel().filter(State::isFinalState)
+                        .toList()
+                        .toString()
+                        .replace("[", "{").replace("]", "}");
+    }
+
     public void removeEpsilonTransition() {
         for (State s : states) {
             for (Character c : symbols) {
                 if (c == 'Ɛ') continue; // Ɛ = epsilon
-                ArrayList<State> statesToBeTransition = getEClosureOfState(s);
-                ArrayList<State> statesToBeEclosure = getStatesToEClosure(statesToBeTransition, c);
-                ArrayList<State> statesAfterEclosure = getEClosureOfStates(statesToBeEclosure);
+                Set<State> statesToBeTransition = getEClosureOfState(s);
+                Set<State> statesToBeEclosure = getStatesToEClosure(statesToBeTransition, c);
+                Set<State> statesAfterEclosure = getEClosureOfStates(statesToBeEclosure);
 
-                if (statesAfterEclosure != null) 
+                if (statesAfterEclosure != null)
                     for (State k : statesAfterEclosure)
                         s.addTransition(c, k);
-
             }
-            s.removeTransition('Ɛ');
         }
+        State startState = states.stream().filter(State::isStartState).findFirst().orElseThrow();
+        if (getEClosureOfState(startState).stream().anyMatch(State::isFinalState))
+            startState.setAsFinalState();
+        states.forEach(state -> state.removeTransition('Ɛ'));
+        symbols.remove(Character.valueOf('Ɛ'));
     }
 
-    @Override
-    public String getDefinition() {
-        StringBuilder definition = new StringBuilder("M = {Q, Σ, δ, q₀, F}\n");
-        definition.append("Q = ")
-                  .append(states.toString().replace("[", "{").replace("]", "}\n"));
-        definition.append("Σ = ")
-                  .append(symbols.stream().filter(s -> s != 'Ɛ')
-                                 .toList().toString()
-                                 .replace("[", "{").replace("]", "}\n"));
-        definition.append("δ: Q x Σ\uD835\uDF74 ➞ Pow(Q)\n");
-        definition.append("q₀ = ").append(states.stream().parallel().filter(State::isStartState).toList().get(0)).append("\n");
-        definition.append("F = ")
-                  .append(states.stream().parallel().filter(State::isFinalState)
-                                         .toList()
-                                         .toString()
-                                         .replace("[", "{").replace("]", "}"));
-        return definition.toString();
-    }
-
-    public void toUnminimizedDFA() {
+    public void toDFA(DFA dfa) {
         resolvePowerset();
+        dfa.getStates().addAll(getStates());
+        dfa.getSymbols().addAll(getSymbols());
     }
 
     private void resolvePowerset () {
         Map<Set<State>, State> mergedStateNameMapper = new HashMap<>();
         State nullState = new State("Z");
+        symbols.forEach(symbol -> nullState.addTransition(symbol, nullState));
         mergedStateNameMapper.put(new HashSet<>(List.of(nullState)), nullState);
 
         int size = this.states.size();
@@ -63,10 +66,10 @@ public class NFA extends Automaton {
     }
 
     private State convertMergedStateToState(Set<State> mergedState) {
-        StringBuilder finalStateName = new StringBuilder();
-        mergedState.forEach(finalStateName::append);
+        StringBuilder mergedStateName = new StringBuilder();
+        mergedState.forEach(mergedStateName::append);
         return this.states.stream()
-                .filter(x -> x.toString().equals(finalStateName.toString()))
+                .filter(x -> x.toString().equals(mergedStateName.toString()))
                 .findFirst().orElseGet(() -> {
                     State newState = new State(GrammarConverter.getAvailableStateNames().remove(0));
                     addState(newState);
@@ -85,38 +88,30 @@ public class NFA extends Automaton {
     }
 
     private void renameNfaStatesToDfa(Map<Set<State>, State> mergedStateNameMapper) {
-        states.forEach(state -> {
-            symbols.forEach(symbol -> {
-                Set<State> transitions = state.getTransition(symbol);
-                state.removeTransition(symbol);
-                if (transitions == null || transitions.isEmpty()) {
-                    State nullState = states.stream().filter(x -> x.toString().equals("Z")).findFirst().orElseThrow();
-                    state.addTransition(symbol, nullState);
-                } else
-                    state.addTransition(symbol, mergedStateNameMapper.get(transitions));
-            });
-        });
-    }
-
-    public void toDFA(DFA dfa) {
-        dfa.getStates().addAll(this.states);
-        dfa.getSymbols().addAll(this.symbols);
+        states.forEach(state -> symbols.forEach(symbol -> {
+            Set<State> transitions = state.getTransition(symbol);
+            state.removeTransition(symbol);
+            if (transitions == null || transitions.isEmpty()) {
+                State nullState = states.stream().filter(x -> x.toString().equals("Z")).findFirst().orElseThrow();
+                state.addTransition(symbol, nullState);
+            } else
+                state.addTransition(symbol, mergedStateNameMapper.get(transitions));
+        }));
     }
 
     // Step 1 Get the state's epsilon closure
-    private ArrayList<State> getEClosureOfState(State state) {
-        ArrayList<State> closureStates = new ArrayList<>();
+    private Set<State> getEClosureOfState(State state) {
+        Set<State> closureStates = new LinkedHashSet<>();
         closureStates.add(state);
         if (state.getTransitions().containsKey('Ɛ'))
             for (State s : state.getTransition('Ɛ'))
                 closureStates.addAll(getEClosureOfState(s));
-        
         return closureStates;
     }
 
     // Step 2 Test each of the closure states with the transition 
-    private ArrayList<State> getStatesToEClosure(ArrayList<State> states, Character c) {
-        ArrayList<State> statesToEClosure = new ArrayList<>();
+    private Set<State> getStatesToEClosure(Set<State> states, Character c) {
+        Set<State> statesToEClosure = new LinkedHashSet<>();
         for (State s : states) {
             Set<State> tempResult = s.getTransition(c);
             if (tempResult != null)
@@ -129,13 +124,11 @@ public class NFA extends Automaton {
     }
 
     // Step 3 Pass in the states for epsilon closure
-    private ArrayList<State> getEClosureOfStates(ArrayList<State> state) {
+    private Set<State> getEClosureOfStates(Set<State> state) {
         if (state.contains(null)) return null;
-        ArrayList<State> result = new ArrayList<>();
+        Set<State> result = new LinkedHashSet<>();
         for (State s : state)
-            if (!result.contains(s))
-                result.addAll(getEClosureOfState(s));
-
+            result.addAll(getEClosureOfState(s));
         return result;
     }
 }
