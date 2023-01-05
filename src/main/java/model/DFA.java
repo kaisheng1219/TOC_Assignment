@@ -17,9 +17,10 @@ public class DFA extends Automaton {
 
         Group group1 = new Group("G1", nonFinalStates);
         Group group2 = new Group("G2", finalStates);
-
-        HopcroftMinimizer minimizer = new HopcroftMinimizer(group1, group2, symbols);
-        this.states = minimizer.minimize();
+        if (!group1.getStates().isEmpty() && !group2.getStates().isEmpty()) {
+            HopcroftMinimizer minimizer = new HopcroftMinimizer(group1, group2, symbols);
+            this.states = minimizer.minimize();
+        }
     }
 
     public boolean isStringAcceptedOrRejected(String input) {
