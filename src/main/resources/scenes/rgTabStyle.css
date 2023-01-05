@@ -18,6 +18,10 @@
     -fx-font-size: 20;
 }
 
+#status .text {
+    -fx-text-alignment: center;
+}
+
 .button {
      -fx-background-insets: 0.0;
      -fx-background-radius: 10 10 10 10;
