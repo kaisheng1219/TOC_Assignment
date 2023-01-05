@@ -15,7 +15,7 @@ public class HopcroftMinimizer {
 		this.groupedStates = new ArrayList<>();
 //		this.minimize();
 	}
-	
+
 	public ArrayList<State> minimize() {
 		ArrayList<Group> finalGroups = new ArrayList<>(groups);
 
@@ -54,7 +54,7 @@ public class HopcroftMinimizer {
 			}
 		}
 		if (results.size() > 1)
-			group.getStates().removeAll(results.get(1).getStates()); // remove non stable states from prev group
+			group.getStates().removeAll(results.get(1).getStates()); // remove non-stable states from prev group
 		return results;
 	}
 
