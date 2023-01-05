@@ -48,63 +48,72 @@ public class Rg2FaController {
         // Reset everything
         inputArea.clear();
         cHbox.getChildren().clear();
-        nfa = new NFA();
-        states = new ArrayList<>();
-        symbols = new ArrayList<>();
         GrammarConverter.getAvailableStateNames().clear();
     }
 
     @FXML
     private void OnClickNFABtn() {
-        GrammarConverter converter = new GrammarConverter(nfa, inputArea.getText().replace(" ", ""));
-        inputArea.setText(converter.getLongForm());
-        this.initDefinitionTextArea();
+        nfa = new NFA();
+        states = nfa.getStates();
+        symbols = nfa.getSymbols();
+        GrammarConverter grammarConverter = new GrammarConverter(nfa, inputArea.getText().replace(" ", ""));
+        inputArea.setText(grammarConverter.getLongForm());
+        initDefinitionTextArea();
         definition.setText(nfa.getDefinition());
-        this.initTableView(true, false);
-
+        initTableView(true);
         cHbox.getChildren().clear();
         cHbox.getChildren().addAll(definition, transitionTb);
     }
 
     @FXML
     private void OnClickNFAEpsBtn() {
-        nfa.removeEpsilonTransition();
-        this.initTableView(true, true);
         cHbox.getChildren().clear();
+        nfa.removeEpsilonTransition();
+        states = nfa.getStates();
+        definition.setText(nfa.getDefinition());
+        this.initTableView(true);
         cHbox.getChildren().addAll(definition, transitionTb);
     }
 
     @FXML
     private void OnClickDFABtn() {
-        nfa.toUnminimizedDFA();
-        this.initTableView(false, false);
         cHbox.getChildren().clear();
+        dfa = new DFA();
+        nfa.toDFA(dfa);
+        states = dfa.getStates();
+        for (State s : states) {
+            System.out.println(s + ": " + s.getTransitions());
+        }
+        this.initTableView(false);
         cHbox.getChildren().addAll(transitionTb);
     }
 
     @FXML
     private void OnClickMinDFABtn() {
-        dfa = new DFA();
-        nfa.toDFA(dfa);
+        cHbox.getChildren().clear();
         dfa.minimize();
         this.states = dfa.getStates();
-        this.symbols = dfa.getSymbols();
-        this.initTableView(false, false);
-        cHbox.getChildren().clear();
+        this.initTableView(false);
         cHbox.getChildren().addAll(transitionTb);
     }
 
     @FXML
-    private void OnClickTestBtn() {
-
+    private void OnClickTestBtn() throws IOException {
+        cHbox.getChildren().clear();
+        FXMLLoader fxmlLoader = new FXMLLoader(ClassLoader.getSystemResource("Scenes/test-view.fxml"));
+        fxmlLoader.setControllerFactory(type -> {
+            if (type == TestController.class) {
+                TestController controller = new TestController();
+                controller.setData(dfa);
+                return controller;
+            }
+            return null;
+        });
+        cHbox.getChildren().add(fxmlLoader.load());
     }
 
     @FXML
     private void initialize() {
-        this.nfa = new NFA();
-        this.states = nfa.getStates();
-        this.symbols = nfa.getSymbols();
-
         Map<String, String> replacements = new HashMap<>();
         replacements.put("\\e", "Ɛ");
         replacements.put("->", "➞");
@@ -134,27 +143,23 @@ public class Rg2FaController {
         definition = new TextArea();
         definition.setFont(Font.font("SanSerif", 20));
         definition.setEditable(false);
-//        definition.setPadding(new Insets(cHbox.getHeight() / 4, 0, 30, 5));
+        definition.setPadding(new Insets(cHbox.getHeight() / 4, 0, 0, 5));
         definition.setMaxWidth(cHbox.getWidth() / 2 - 100);
         definition.setMinWidth(cHbox.getWidth() / 2 - 150);
-//        definition.setMaxHeight(cHbox.getHeight() - 20);
         definition.setMinHeight(20 * 6);
         definition.setStyle("-fx-background-color: transparent; " +
-                "-fx-font-weight: Bold; -fx-font-size: 20; text-area-border-color: transparent;");
-
-        VBox.setVgrow(definition, Priority.NEVER);
-        HBox.setHgrow(definition, Priority.NEVER);
+                "-fx-font-weight: Bold; -fx-font-size: 20; text-area-border-color: transparent;" +
+                "-fx-text-alignment: center;");
     }
 
-    private void initTableView(boolean isNFA, boolean isNFAwoEps) {
+    private void initTableView(boolean isNFA) {
         transitionTb = new TableView<>();
-        ObservableList<State> statesTb = FXCollections.observableArrayList(states);
         transitionTb.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         transitionTb.setFixedCellSize(50);
         transitionTb.setSelectionModel(null);
 
         ArrayList<TableColumn<State, String>> columns = new ArrayList<>();
-        TableColumn<State, String> column1 = new TableColumn<>("δ\uD835\uDF74");
+        TableColumn<State, String> column1 = new TableColumn<>("δ");
 
         column1.setCellValueFactory(cellData -> {
             String data = "";
@@ -166,7 +171,6 @@ public class Rg2FaController {
             return new SimpleStringProperty(data);
         });
         columns.add(column1);
-        if (isNFAwoEps) symbols.remove((Character)'Ɛ');
         String replacementLeft = isNFA ? "{" : "";
         String replacementRight = isNFA ? "}" : "";
 
@@ -197,17 +201,10 @@ public class Rg2FaController {
             });
             column.setSortable(false);
         }
-
+        ObservableList<State> statesTb = FXCollections.observableArrayList(states);
         transitionTb.setItems(statesTb);
         transitionTb.getColumns().addAll(columns);
         transitionTb.setMaxHeight((transitionTb.getItems().size() + 1) * 50 * 1.01);
         transitionTb.setEditable(false);
-    }
-
-    private double computeTableNetVerticalSpace() {
-        double tableHeight = transitionTb.getMaxHeight();
-        double containerHeight = contentPane.getHeight() - 10;
-        double netVSpace = containerHeight - tableHeight;
-        return netVSpace < 0 ? 5 : netVSpace / 2;
     }
 }
