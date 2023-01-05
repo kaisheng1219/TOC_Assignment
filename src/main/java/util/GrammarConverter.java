@@ -50,7 +50,7 @@ public class GrammarConverter {
     public static ArrayList<String> getAvailableStateNames() {
         return availableStateNames;
     }
-    
+
     private void setAllPossibleStateName() {
         IntStream.rangeClosed('A', 'Y').mapToObj(x -> (char) x).forEach(x -> availableStateNames.add(String.valueOf(x)));
         for (String line : lines) {
