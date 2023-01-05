@@ -1,11 +1,8 @@
 package util;
 
-import model.Automaton;
-import model.NFA;
-import model.State;
+import model.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GrammarConverter {
@@ -29,32 +26,33 @@ public class GrammarConverter {
             LinkedHashMap<Character, Set<State>> transitions = state.getTransitions();
             if (transitions == null || transitions.isEmpty())
                 longFormSb.append("Ɛ\n");
-            else {// 'a' : [B, C], 'b' : [C], 'Ɛ' : [C] ==> aB | aC | bC | C
+            else {// 'a' : [B, C], 'b' : [C], 'Ɛ' : [C, A] ==> aB | aC | bC | C | A
                 Iterator<Map.Entry<Character, Set<State>>> iterator = transitions.entrySet().iterator();
                 while (iterator.hasNext()) {
                     // Get the next entry in the map
                     Map.Entry<Character, Set<State>> entry = iterator.next();
                     ArrayList<State> toStates = new ArrayList<>(entry.getValue());
-                    for (State toState : toStates)
-                        if (iterator.hasNext())
-                            longFormSb.append(entry.getKey()).append(toState).append(" | ");
+                    for (int i = 0; i < toStates.size(); i++) {
+                        if (!iterator.hasNext() && i == toStates.size()-1)
+                            longFormSb.append(entry.getKey()).append(toStates.get(i));
                         else
-                            longFormSb.append(entry.getKey()).append(toState);
+                            longFormSb.append(entry.getKey()).append(toStates.get(i)).append(" | ");
+                    }
                 }
                 if (state.isFinalState())
                     longFormSb.append(" | Ɛ");
                 longFormSb.append("\n");
             }
         }
-        System.out.println(longFormSb.toString());
         return longFormSb.toString();
     }
 
     public static ArrayList<String> getAvailableStateNames() {
         return availableStateNames;
     }
+    
     private void setAllPossibleStateName() {
-        IntStream.rangeClosed('A', 'Z').mapToObj(x -> (char) x).forEach(x -> availableStateNames.add(String.valueOf(x)));
+        IntStream.rangeClosed('A', 'Y').mapToObj(x -> (char) x).forEach(x -> availableStateNames.add(String.valueOf(x)));
         for (String line : lines) {
             String lhs = line.split("➞")[0];
             availableStateNames.remove(lhs);
@@ -75,6 +73,7 @@ public class GrammarConverter {
                 produceByRule(state, transition);
         }
         this.setAllPossibleStateName();
+        this.setPossibleFinalStates();
     }
 
     private void produceByRule(State variable, String grammarRHS) {
