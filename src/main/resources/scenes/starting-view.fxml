@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
@@ -112,9 +113,34 @@
     </Tab>
       <Tab text="Help">
         <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" style="-fx-background-color: #212133;">
                <children>
-                  <AnchorPane layoutX="60.0" layoutY="44.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <ScrollPane hbarPolicy="NEVER" layoutX="-6.400000095367432" stylesheets="@rgTabStyle.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <content>
+                        <VBox alignment="TOP_CENTER" prefHeight="850.0" prefWidth="1218.0" style="-fx-background-color: #212133;">
+                           <children>
+                              <AnchorPane prefHeight="387.0" prefWidth="1206.0">
+                                 <children>
+                                    <ImageView fitHeight="573.0" fitWidth="1196.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../images/helpPage.png" />
+                                       </image>
+                                    </ImageView>
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="392.0" prefWidth="1176.0">
+                                 <children>
+                                    <ImageView fitHeight="417.0" fitWidth="1189.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="-25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <image>
+                                          <Image url="@../images/helpPage2.png" />
+                                       </image>
+                                    </ImageView>
+                                 </children>
+                              </AnchorPane>
+                           </children>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
                </children></AnchorPane>
         </content>
       </Tab>

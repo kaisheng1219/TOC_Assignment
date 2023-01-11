@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="TOC_Assignment:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/TOC_Assignment_jar</output-path>
+    <root id="archive" name="TOC_Assignment.jar">
+      <element id="module-output" name="TOC_Assignment" />
+    </root>
+  </artifact>
+</component>

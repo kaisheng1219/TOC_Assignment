@@ -70,7 +70,7 @@
 }
 
 .scroll-pane {
-     -fx-background-color: white;
+     -fx-background-color: transparent;
  }
 
 .scroll-bar:horizontal .track,
