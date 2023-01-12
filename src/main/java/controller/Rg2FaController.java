@@ -100,7 +100,7 @@ public class Rg2FaController {
     @FXML
     private void OnClickTestBtn() throws IOException {
         cHbox.getChildren().clear();
-        FXMLLoader fxmlLoader = new FXMLLoader(Rg2FaController.class.getResource("../scenes/test-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(ClassLoader.getSystemResource("scenes/test-view.fxml"));
         fxmlLoader.setControllerFactory(type -> {
             if (type == TestController.class) {
                 TestController controller = new TestController();
