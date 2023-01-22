@@ -53,6 +53,8 @@ public class GrammarConverter {
 
     private void setAllPossibleStateName() {
         IntStream.rangeClosed('A', 'Y').mapToObj(x -> (char) x).forEach(x -> availableStateNames.add(String.valueOf(x)));
+        IntStream.rangeClosed(1, 1000).mapToObj(x -> "S" + x).forEach(availableStateNames::add);
+
         for (String line : lines) {
             String lhs = line.split("➞")[0];
             availableStateNames.remove(lhs);

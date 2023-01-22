@@ -17,7 +17,7 @@ import javafx.util.Callback;
 import model.*;
 import util.GrammarConverter;
 
-public class Rg2FaController {
+public class GrammarToFAController {
     private NFA nfa;
     private DFA dfa;
     private ArrayList<State> states;
